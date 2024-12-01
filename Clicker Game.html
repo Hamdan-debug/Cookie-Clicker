@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Clicker Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #cookie {
+            width: 150px;
+            height: 150px;
+            background-image: url('Cook.png'); 
+            background-size: cover;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        #status {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #shop {
+            margin-top: 20px;
+        }
+        .upgrade {
+            margin: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .upgrade:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div id="cookie" onclick="clickCookie()"></div>
+    <div id="status">Cookies: <span id="cookieCount">0</span></div>
+
+    <div id="shop">
+        <div class="upgrade" onclick="buyUpgrade('helper')">Buy Helper (10 Cookies) <span id="helperCount">0</span></div>
+        <div class="upgrade" onclick="buyUpgrade('granny')">Buy Grandma (100 Cookies) <span id="grannyCount">0</span></div>
+        <div class="upgrade" onclick="buyUpgrade('factory')">Buy Factory (1000 Cookies) <span id="factoryCount">0</span></div>
+        <div class="upgrade" onclick="buyUpgrade('mine')">Buy Mine (10000 Cookies) <span id="mineCount">0</span></div>
+    </div>
+
+    <script>
+        let cookies = 0;
+        let cookiesPerSecond = 0;
+        let upgrades = {
+            helper: { cost: 10, count: 0, cps: 1 },
+            granny: { cost: 100, count: 0, cps: 5 },
+            factory: { cost: 1000, count: 0, cps: 10 },
+            mine: { cost: 10000, count: 0, cps: 50 },
+        };
+        
+        // Load game state from localStorage
+        function loadGame() {
+            const savedGame = JSON.parse(localStorage.getItem('cookieClickerGame'));
+            if (savedGame) {
+                cookies = savedGame.cookies;
+                upgrades = savedGame.upgrades;
+                updateDisplay();
+                updateUpgradeDisplay();
+            }
+        }
+    
+        // Save game state to localStorage
+        function saveGame() {
+            const gameState = {
+                cookies: cookies,
+                upgrades: upgrades,
+            };
+            localStorage.setItem('cookieClickerGame', JSON.stringify(gameState));
+        }
+    
+        function clickCookie() {
+            cookies += 1;
+            updateDisplay();
+            saveGame();  // Save the game after clicking
+        }
+    
+        function buyUpgrade(upgrade) {
+            if (cookies >= upgrades[upgrade].cost) {
+                cookies -= upgrades[upgrade].cost;
+                upgrades[upgrade].count += 1;
+                upgrades[upgrade].cost = Math.floor(upgrades[upgrade].cost * 1.15);
+                updateDisplay();
+                updateUpgradeDisplay();
+                saveGame(); // Save the game after purchasing an upgrade
+            } else {
+                alert("Not enough cookies!");
+            }
+        }
+    
+        function updateDisplay() {
+            document.getElementById("cookieCount").innerText = cookies;
+        }
+    
+        function updateUpgradeDisplay() {
+            document.getElementById("helperCount").innerText = upgrades.helper.count;
+            document.getElementById("grannyCount").innerText = upgrades.granny.count;
+            document.getElementById("factoryCount").innerText = upgrades.factory.count;
+            document.getElementById("mineCount").innerText = upgrades.mine.count;
+        }
+    
+        // Auto-generate cookies based on upgrades every second
+        setInterval(() => {
+            let totalCPS = 0;
+            for (let upgrade in upgrades) {
+                totalCPS += upgrades[upgrade].cps * upgrades[upgrade].count;
+            }
+            cookies += totalCPS;
+            updateDisplay();
+            saveGame(); // Save the game every second
+        }, 1000);
+    
+        // Load the game when the page is loaded
+        window.onload = loadGame;
+    </script>
+</body>
+</html>
